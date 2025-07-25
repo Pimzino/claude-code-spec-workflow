@@ -8,16 +8,13 @@ import {
   getSpecExecuteCommand,
   getSpecStatusCommand,
   getSpecListCommand,
-  getSpecSteeringSetupCommand
+  getSpecSteeringSetupCommand,
 } from './commands';
-import { getPackageMetadata } from './utils';
+import { getPackageMetadata, getCommandCount } from './utils';
 import {
   getRequirementsTemplate,
   getDesignTemplate,
   getTasksTemplate,
-  getProductTemplate,
-  getTechTemplate,
-  getStructureTemplate
 } from './templates';
 import { getClaudeMdContent } from './claude-md';
 // Script imports removed in v1.2.5 - task command generation now uses NPX command
@@ -57,7 +54,7 @@ export class SpecWorkflowSetup {
       this.specsDir,
       this.templatesDir,
       // scriptsDir removed from directory creation
-      this.steeringDir
+      this.steeringDir,
     ];
 
     for (const dir of directories) {
@@ -74,13 +71,12 @@ export class SpecWorkflowSetup {
       'spec-execute': getSpecExecuteCommand(),
       'spec-status': getSpecStatusCommand(),
       'spec-list': getSpecListCommand(),
-      'spec-steering-setup': getSpecSteeringSetupCommand()
+      'spec-steering-setup': getSpecSteeringSetupCommand(),
     };
   }
 
-  async getCommandCount(): Promise<number> {
-    const commands = this.getCommands();
-    return Object.keys(commands).length;
+  getCommandCount(): number {
+    return getCommandCount();
   }
 
   async createSlashCommands(): Promise<void> {
@@ -96,7 +92,7 @@ export class SpecWorkflowSetup {
     const templates = {
       'requirements-template.md': getRequirementsTemplate(),
       'design-template.md': getDesignTemplate(),
-      'tasks-template.md': getTasksTemplate()
+      'tasks-template.md': getTasksTemplate(),
     };
 
     for (const [templateName, templateContent] of Object.entries(templates)) {
@@ -116,8 +112,8 @@ export class SpecWorkflowSetup {
         auto_reference_requirements: true,
         enforce_approval_workflow: true,
         default_feature_prefix: 'feature-',
-        supported_formats: ['markdown', 'mermaid']
-      }
+        supported_formats: ['markdown', 'mermaid'],
+      },
     };
 
     const configFile = join(this.claudeDir, 'spec-config.json');
@@ -140,7 +136,7 @@ export class SpecWorkflowSetup {
       } else {
         // Replace existing spec workflow section while preserving everything else
         const lines = existingContent.split('\n');
-        const startIndex = lines.findIndex(line => line.trim() === '# Spec Workflow');
+        const startIndex = lines.findIndex((line) => line.trim() === '# Spec Workflow');
 
         if (startIndex !== -1) {
           // Find the end of the spec workflow section (next # header or end of file)
