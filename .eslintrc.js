@@ -5,17 +5,16 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint'],
-  extends: [
-    'eslint:recommended',
-  ],
+  extends: ['eslint:recommended'],
   rules: {
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-explicit-any': 'warn',
     'no-console': 'off', // CLI tool needs console output
   },
   env: {
-    node: true,
     es2020: true,
+    jest: true,
+    node: true,
   },
   globals: {
     NodeJS: 'readonly',
