@@ -5,15 +5,15 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import { SpecWorkflowSetup } from './setup';
-import { detectProjectType, validateClaudeCode } from './utils';
+import { detectProjectType, validateClaudeCode, getPackageMetadata, getCommandInfo } from './utils';
 import { parseTasksFromMarkdown, generateTaskCommand } from './task-generator';
 
 const program = new Command();
+const packageMeta = getPackageMetadata();
 
-program
-  .name('claude-spec-setup')
-  .description('Set up Claude Code Spec Workflow in your project')
-  .version('1.1.2');
+const COMMAND_USAGE_PADDING = 32;
+
+program.name('claude-spec-setup').description(packageMeta.description).version(packageMeta.version);
 
 program
   .option('-p, --project <path>', 'Project directory', process.cwd())
@@ -76,9 +76,15 @@ program
         let commandCountText = 'slash commands for spec workflow';
         try {
           const setup = new SpecWorkflowSetup(projectPath);
-          const commandCount = await setup.getCommandCount();
+          const commandCount = setup.getCommandCount();
           commandCountText = `${commandCount} slash commands for spec workflow`;
-        } catch (error) {}
+        } catch (error) {
+          console.warn(
+            chalk.yellow('Warning: Could not determine command count'),
+            error instanceof Error ? error.message : 'Unknown error'
+          );
+          commandCountText = 'slash commands for spec workflow';
+        }
 
         console.log(chalk.gray(`  📝 ${commandCountText}`));
         console.log(chalk.gray('  🤖 Auto-generated task commands'));
@@ -113,14 +119,13 @@ program
       console.log(chalk.green.bold('✅ Spec Workflow installed successfully!'));
       console.log();
       console.log(chalk.cyan('Available commands:'));
-      console.log(chalk.gray('  /spec-create <feature-name>  - Create a new spec'));
-      console.log(chalk.gray('  /spec-requirements           - Generate requirements'));
-      console.log(chalk.gray('  /spec-design                 - Generate design'));
-      console.log(chalk.gray('  /spec-tasks                  - Generate tasks'));
-      console.log(chalk.gray('  /spec-execute <task-id>      - Execute tasks'));
+
+      const commands = getCommandInfo();
+      for (const command of commands) {
+        const paddedUsage = command.usage.padEnd(COMMAND_USAGE_PADDING);
+        console.log(chalk.gray(`  ${paddedUsage} - ${command.description}`));
+      }
       console.log(chalk.gray('  /{spec-name}-task-{id}       - Auto-generated task commands'));
-      console.log(chalk.gray('  /spec-status                 - Show status'));
-      console.log(chalk.gray('  /spec-list                   - List all specs'));
       console.log();
       console.log(chalk.yellow('Next steps:'));
       console.log(chalk.gray('1. Run: claude'));
@@ -166,6 +171,19 @@ program
   .argument('<spec-name>', 'Name of the spec to generate commands for')
   .option('-p, --project <path>', 'Project directory', process.cwd())
   .action(async (specName, options) => {
+    // Validate spec name
+    if (!/^[a-zA-Z0-9-_]+$/.test(specName)) {
+      console.error(
+        chalk.red('Error: Invalid spec name. Use only letters, numbers, hyphens, and underscores.')
+      );
+      process.exit(1);
+    }
+
+    if (specName.length > 50) {
+      console.error(chalk.red('Error: Spec name must be 50 characters or less.'));
+      process.exit(1);
+    }
+
     console.log(chalk.cyan('🔧 Generating task commands...'));
 
     const path = await import('path');
