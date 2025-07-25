@@ -1,4 +1,7 @@
+import { getPackageMetadata } from './utils';
+
 export function getClaudeMdContent(): string {
+  const packageMeta = getPackageMetadata();
   return `# Spec Workflow
 
 This project uses the automated Spec workflow for feature development, based on spec-driven methodology. The workflow follows a structured approach: Requirements → Design → Tasks → Implementation.
@@ -82,7 +85,7 @@ Before starting your first spec, consider setting up steering documents:
    - Create tasks.md
    - Get user approval
    - **Ask user if they want task commands generated** (yes/no)
-   - If yes: run \`npx @pimzino/claude-code-spec-workflow@latest generate-task-commands {spec-name}\`
+   - If yes: run \`npx ${packageMeta.name}@latest generate-task-commands {spec-name}\`
    - **IMPORTANT**: Inform user to restart Claude Code for new commands to be visible
 
 4. **Implementation Phase** (\`/spec-execute\` or generated commands)
@@ -173,7 +176,7 @@ Before starting your first spec, consider setting up steering documents:
 6. Ask: "Do the tasks look good?"
 7. **CRITICAL**: Wait for explicit approval before proceeding
 8. **AFTER APPROVAL**: Ask "Would you like me to generate individual task commands for easier execution? (yes/no)"
-9. **IF YES**: Execute \`npx @pimzino/claude-code-spec-workflow@latest generate-task-commands {feature-name}\`
+9. **IF YES**: Execute \`npx ${packageMeta.name}@latest generate-task-commands {feature-name}\`
 10. **IF NO**: Continue with traditional \`/spec-execute\` approach
 
 **Task Format**:
@@ -227,7 +230,7 @@ Before starting your first spec, consider setting up steering documents:
 ## CRITICAL: Task Command Generation Rules
 
 **Use NPX Command for Task Generation**: Task commands are now generated using the package's CLI command.
-- **COMMAND**: \`npx @pimzino/claude-code-spec-workflow@latest generate-task-commands {spec-name}\`
+- **COMMAND**: \`npx ${packageMeta.name}@latest generate-task-commands {spec-name}\`
 - **TIMING**: Only run after tasks.md is approved AND user confirms they want task commands
 - **USER CHOICE**: Always ask the user if they want task commands generated (yes/no)
 - **CROSS-PLATFORM**: Works automatically on Windows, macOS, and Linux
@@ -305,13 +308,13 @@ The workflow automatically creates individual commands for each task:
 2. **Design Phase**: Create design.md 
 3. **Tasks Phase**: Create tasks.md 
 4. **AFTER tasks approval**: Ask user if they want task commands generated
-5. **IF YES**: Execute \`npx @pimzino/claude-code-spec-workflow@latest generate-task-commands {spec-name}\`
+5. **IF YES**: Execute \`npx ${packageMeta.name}@latest generate-task-commands {spec-name}\`
 6. **RESTART REQUIRED**: Inform user to restart Claude Code for new commands to be visible
 
 **When to Generate Task Commands**:
 - **ONLY** after tasks are approved in \`/spec-tasks\`
 - **ONLY** if user confirms they want individual task commands
-- **Command**: \`npx @pimzino/claude-code-spec-workflow@latest generate-task-commands {spec-name}\`
+- **Command**: \`npx ${packageMeta.name}@latest generate-task-commands {spec-name}\`
 - **BENEFIT**: Easier task execution with commands like \`/{spec-name}-task-1\`
 - **OPTIONAL**: User can decline and use traditional \`/spec-execute\` approach
 - **RESTART CLAUDE CODE**: New commands require a restart to be visible

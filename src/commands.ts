@@ -1,3 +1,5 @@
+import { getPackageMetadata } from './utils';
+
 export function getSpecCreateCommand(): string {
   return `# Spec Create Command
 
@@ -227,6 +229,7 @@ After approval, proceed to \`/spec-tasks\`.
 }
 
 export function getSpecTasksCommand(): string {
+  const packageMeta = getPackageMetadata();
   return `# Spec Tasks Command
 
 Generate implementation task list based on approved design.
@@ -290,7 +293,7 @@ You are working on the tasks phase of the spec workflow.
 7. **Generate Task Commands** (ONLY after tasks approval)
    - **WAIT**: Do not run command generation until user explicitly approves tasks
    - **ASK USER**: "Would you like me to generate individual task commands for easier execution? (yes/no)"
-   - **IF YES**: Execute \`npx @pimzino/claude-code-spec-workflow@latest generate-task-commands {feature-name}\`
+   - **IF YES**: Execute \`npx ${packageMeta.name}@latest generate-task-commands {feature-name}\`
    - **IF NO**: Continue with traditional \`/spec-execute\` approach
    - **PURPOSE**: Creates individual task commands in \`.claude/commands/{feature-name}/\`
    - **RESULT**: Each task gets its own command: \`/{feature-name}-task-{task-id}\`
