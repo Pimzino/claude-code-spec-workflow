@@ -14,7 +14,7 @@ export interface ParsedTask {
  * Parse tasks from a tasks.md markdown file
  * Handles the exact format from the template:
  * - [ ] 1. Task description
- * - [ ] 2.1 Subtask description  
+ * - [ ] 2.1 Subtask description
  *   - Details
  *   - _Requirements: 1.1, 2.2_
  *   - _Leverage: existing component X_
@@ -22,30 +22,30 @@ export interface ParsedTask {
 export function parseTasksFromMarkdown(content: string): ParsedTask[] {
   const tasks: ParsedTask[] = [];
   const lines = content.split('\n');
-  
+
   let currentTask: ParsedTask | null = null;
-  
+
   for (const line of lines) {
     const trimmedLine = line.trim();
-    
+
     // Match task lines: "- [ ] 1. Task description" or "- [ ] 2.1 Subtask description"
     const taskMatch = trimmedLine.match(/^-\s*\[\s*\]\s*([0-9]+(?:\.[0-9]+)*)\s*\.?\s*(.+)$/);
-    
+
     if (taskMatch) {
       // If we have a previous task, save it
       if (currentTask) {
         tasks.push(currentTask);
       }
-      
+
       // Start new task
       const taskId = taskMatch[1];
       const taskDescription = taskMatch[2];
-      
+
       currentTask = {
         id: taskId,
-        description: taskDescription
+        description: taskDescription,
       };
-    } 
+    }
     // Check for _Requirements: lines (only if we're in a task)
     else if (currentTask && trimmedLine.match(/^-\s*_Requirements:\s*(.+)$/)) {
       const requirementsMatch = trimmedLine.match(/^-\s*_Requirements:\s*(.+)$/);
@@ -61,12 +61,12 @@ export function parseTasksFromMarkdown(content: string): ParsedTask[] {
       }
     }
   }
-  
+
   // Don't forget the last task
   if (currentTask) {
     tasks.push(currentTask);
   }
-  
+
   return tasks;
 }
 
@@ -74,15 +74,15 @@ export function parseTasksFromMarkdown(content: string): ParsedTask[] {
  * Generate a command file for a specific task
  */
 export async function generateTaskCommand(
-  commandsDir: string, 
-  specName: string, 
+  commandsDir: string,
+  specName: string,
   task: ParsedTask
 ): Promise<void> {
   const fs = await import('fs/promises');
   const path = await import('path');
-  
+
   const commandFile = path.join(commandsDir, `task-${task.id}.md`);
-  
+
   let content = `# ${specName} - Task ${task.id}
 
 Execute task ${task.id} for the ${specName} specification.

@@ -54,7 +54,7 @@ export class SteeringLoader {
     try {
       await fs.access(this.steeringDir);
       const files = await fs.readdir(this.steeringDir);
-      return files.some(file => ['product.md', 'tech.md', 'structure.md'].includes(file));
+      return files.some((file) => ['product.md', 'tech.md', 'structure.md'].includes(file));
     } catch {
       return false;
     }
