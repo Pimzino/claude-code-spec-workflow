@@ -11,11 +11,7 @@ import {
   getSpecSteeringSetupCommand,
 } from './commands';
 import { getPackageMetadata, getCommandCount } from './utils';
-import {
-  getRequirementsTemplate,
-  getDesignTemplate,
-  getTasksTemplate,
-} from './templates';
+import { getRequirementsTemplate, getDesignTemplate, getTasksTemplate } from './templates';
 import { getClaudeMdContent } from './claude-md';
 // Script imports removed in v1.2.5 - task command generation now uses NPX command
 
