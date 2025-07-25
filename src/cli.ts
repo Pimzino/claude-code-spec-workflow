@@ -7,13 +7,14 @@ import ora from 'ora';
 import { SpecWorkflowSetup } from './setup';
 import { detectProjectType, validateClaudeCode } from './utils';
 import { parseTasksFromMarkdown, generateTaskCommand } from './task-generator';
+import packageJson from '../package.json';
 
 const program = new Command();
 
 program
   .name('claude-spec-setup')
   .description('Set up Claude Code Spec Workflow in your project')
-  .version('1.1.2');
+  .version(packageJson.version);
 
 program
   .option('-p, --project <path>', 'Project directory', process.cwd())
