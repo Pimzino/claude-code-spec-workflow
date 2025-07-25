@@ -10,6 +10,7 @@ import {
   getSpecListCommand,
   getSpecSteeringSetupCommand
 } from './commands';
+import { getPackageMetadata } from './utils';
 import {
   getRequirementsTemplate,
   getDesignTemplate,
@@ -64,8 +65,8 @@ export class SpecWorkflowSetup {
     }
   }
 
-  async createSlashCommands(): Promise<void> {
-    const commands = {
+  private getCommands() {
+    return {
       'spec-create': getSpecCreateCommand(),
       'spec-requirements': getSpecRequirementsCommand(),
       'spec-design': getSpecDesignCommand(),
@@ -75,6 +76,15 @@ export class SpecWorkflowSetup {
       'spec-list': getSpecListCommand(),
       'spec-steering-setup': getSpecSteeringSetupCommand()
     };
+  }
+
+  async getCommandCount(): Promise<number> {
+    const commands = this.getCommands();
+    return Object.keys(commands).length;
+  }
+
+  async createSlashCommands(): Promise<void> {
+    const commands = this.getCommands();
 
     for (const [commandName, commandContent] of Object.entries(commands)) {
       const commandFile = join(this.commandsDir, `${commandName}.md`);
@@ -98,9 +108,10 @@ export class SpecWorkflowSetup {
   // NOTE: Script creation removed in v1.2.5 - task command generation now uses NPX command
 
   async createConfigFile(): Promise<void> {
+    const packageMeta = getPackageMetadata();
     const config = {
       spec_workflow: {
-        version: '1.0.0',
+        version: packageMeta.version,
         auto_create_directories: true,
         auto_reference_requirements: true,
         enforce_approval_workflow: true,

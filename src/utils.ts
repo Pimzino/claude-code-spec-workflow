@@ -1,4 +1,5 @@
 import { promises as fs } from 'fs';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -8,13 +9,13 @@ const execAsync = promisify(exec);
 export async function detectProjectType(projectPath: string): Promise<string[]> {
   const indicators = {
     'Node.js': ['package.json', 'node_modules'],
-    'Python': ['requirements.txt', 'setup.py', 'pyproject.toml', '__pycache__'],
-    'Java': ['pom.xml', 'build.gradle'],
+    Python: ['requirements.txt', 'setup.py', 'pyproject.toml', '__pycache__'],
+    Java: ['pom.xml', 'build.gradle'],
     'C#': ['*.csproj', '*.sln'],
-    'Go': ['go.mod', 'go.sum'],
-    'Rust': ['Cargo.toml', 'Cargo.lock'],
-    'PHP': ['composer.json', 'vendor'],
-    'Ruby': ['Gemfile', 'Gemfile.lock'],
+    Go: ['go.mod', 'go.sum'],
+    Rust: ['Cargo.toml', 'Cargo.lock'],
+    PHP: ['composer.json', 'vendor'],
+    Ruby: ['Gemfile', 'Gemfile.lock'],
   };
 
   const detected: string[] = [];
@@ -26,7 +27,7 @@ export async function detectProjectType(projectPath: string): Promise<string[]> 
           // Handle glob patterns - simplified check
           const dirContents = await fs.readdir(projectPath);
           const extension = file.replace('*', '');
-          if (dirContents.some(f => f.endsWith(extension))) {
+          if (dirContents.some((f) => f.endsWith(extension))) {
             detected.push(projectType);
             break;
           }
@@ -66,8 +67,41 @@ export async function ensureDirectory(dirPath: string): Promise<void> {
   try {
     await fs.mkdir(dirPath, { recursive: true });
   } catch (error) {
-    if ((error as any).code !== 'EEXIST') {
+    const fsError = error as NodeJS.ErrnoException;
+
+    if (fsError.code !== 'EEXIST') {
       throw error;
     }
+  }
+}
+
+export interface PackageMetadata {
+  version: string;
+  name: string;
+  description: string;
+}
+
+export function getPackageMetadata(): PackageMetadata {
+  const packagePath = join(__dirname, '../package.json');
+  const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
+
+  return {
+    version: packageJson.version,
+    name: packageJson.name,
+    description: packageJson.description,
+  };
+}
+
+export async function countCommandFiles(): Promise<number> {
+  const commandsDir = join(__dirname, '../.claude/commands');
+
+  try {
+    const files = await fs.readdir(commandsDir);
+
+    return files.filter((file) => file.startsWith('spec-') && file.endsWith('.md')).length;
+  } catch (error) {
+    throw new Error(
+      `Unable to count command files: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }

@@ -56,8 +56,8 @@ program
               type: 'confirm',
               name: 'proceed',
               message: '.claude directory already exists. Overwrite?',
-              default: false
-            }
+              default: false,
+            },
           ]);
 
           if (!proceed) {
@@ -72,7 +72,15 @@ program
         console.log();
         console.log(chalk.cyan('This will create:'));
         console.log(chalk.gray('  📁 .claude/ directory structure'));
-        console.log(chalk.gray('  📝 7 slash commands for spec workflow'));
+
+        let commandCountText = 'slash commands for spec workflow';
+        try {
+          const setup = new SpecWorkflowSetup(projectPath);
+          const commandCount = await setup.getCommandCount();
+          commandCountText = `${commandCount} slash commands for spec workflow`;
+        } catch (error) {}
+
+        console.log(chalk.gray(`  📝 ${commandCountText}`));
         console.log(chalk.gray('  🤖 Auto-generated task commands'));
         console.log(chalk.gray('  📋 Document templates'));
         console.log(chalk.gray('  🔧 NPX-based task command generation'));
@@ -85,8 +93,8 @@ program
             type: 'confirm',
             name: 'confirm',
             message: 'Proceed with setup?',
-            default: true
-          }
+            default: true,
+          },
         ]);
 
         if (!confirm) {
@@ -119,7 +127,6 @@ program
       console.log(chalk.gray('2. Try: /spec-create my-feature'));
       console.log();
       console.log(chalk.blue('📖 For help, see the README or run /spec-list'));
-
     } catch (error) {
       spinner.fail('Setup failed');
       console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
@@ -146,7 +153,6 @@ program
 
       console.log(chalk.green('✅ Test completed successfully!'));
       console.log(chalk.gray(`Test directory: ${tempDir}`));
-
     } catch (error) {
       console.error(chalk.red('❌ Test failed:'), error);
       process.exit(1);
@@ -161,17 +167,17 @@ program
   .option('-p, --project <path>', 'Project directory', process.cwd())
   .action(async (specName, options) => {
     console.log(chalk.cyan('🔧 Generating task commands...'));
-    
+
     const path = await import('path');
     const fs = await import('fs/promises');
-    
+
     const projectPath = options.project;
     const specDir = path.join(projectPath, '.claude', 'specs', specName);
     const tasksFile = path.join(specDir, 'tasks.md');
     const commandsSpecDir = path.join(projectPath, '.claude', 'commands', specName);
-    
+
     const spinner = ora(`Generating commands for spec: ${specName}`).start();
-    
+
     try {
       // Check if tasks.md exists
       try {
@@ -180,38 +186,46 @@ program
         spinner.fail(`tasks.md not found at ${tasksFile}`);
         process.exit(1);
       }
-      
+
       // Read tasks.md
       const tasksContent = await fs.readFile(tasksFile, 'utf8');
-      
+
       // Create spec commands directory
       await fs.mkdir(commandsSpecDir, { recursive: true });
-      
+
       // Parse tasks and generate commands
       const tasks = parseTasksFromMarkdown(tasksContent);
-      
+
       let taskCount = 0;
       for (const task of tasks) {
         await generateTaskCommand(commandsSpecDir, specName, task);
         taskCount++;
       }
-      
+
       spinner.succeed(`Generated ${taskCount} task commands for spec: ${specName}`);
-      
+
       console.log();
       console.log(chalk.green('Generated commands:'));
       for (const task of tasks) {
         console.log(chalk.gray(`  /${specName}-task-${task.id} - ${task.description}`));
       }
-      
+
       console.log();
-      console.log(chalk.yellow.bold('RESTART REQUIRED: You must restart Claude Code for the new commands to be visible'));
+      console.log(
+        chalk.yellow.bold(
+          'RESTART REQUIRED: You must restart Claude Code for the new commands to be visible'
+        )
+      );
       console.log();
       console.log(chalk.cyan.bold('Instructions for the agent:'));
       console.log(chalk.gray('Tell the user they must exit Claude Code and restart it using:'));
-      console.log(chalk.white('- Run "claude --continue" to continue this conversation with new commands'));
+      console.log(
+        chalk.white('- Run "claude --continue" to continue this conversation with new commands')
+      );
       console.log(chalk.white('- Or run "claude" to start a fresh session'));
-      console.log(chalk.gray('The restart is absolutely necessary for the new task commands to appear.'));
+      console.log(
+        chalk.gray('The restart is absolutely necessary for the new task commands to appear.')
+      );
       console.log();
       console.log(chalk.blue('After restart, you can use commands like:'));
       if (tasks.length > 0) {
@@ -221,7 +235,6 @@ program
         }
         console.log(chalk.gray('  etc.'));
       }
-      
     } catch (error) {
       spinner.fail('Command generation failed');
       console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
