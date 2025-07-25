@@ -81,15 +81,42 @@ export interface PackageMetadata {
   description: string;
 }
 
-export function getPackageMetadata(): PackageMetadata {
-  const packagePath = join(__dirname, '../package.json');
-  const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
+let cachedMetadata: PackageMetadata | null = null;
 
-  return {
-    version: packageJson.version,
-    name: packageJson.name,
-    description: packageJson.description,
-  };
+export function getPackageMetadata(): PackageMetadata {
+  if (cachedMetadata) {
+    return cachedMetadata;
+  }
+
+  try {
+    const packagePath = join(__dirname, '../package.json');
+    const packageContent = readFileSync(packagePath, 'utf8');
+    const packageJson = JSON.parse(packageContent);
+
+    if (!packageJson.version || !packageJson.name || !packageJson.description) {
+      throw new Error('Missing required fields (version, name, description) in package.json');
+    }
+
+    cachedMetadata = {
+      version: packageJson.version,
+      name: packageJson.name,
+      description: packageJson.description,
+    };
+
+    return cachedMetadata;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error('Failed to parse package.json: Invalid JSON format');
+    }
+    if (error instanceof Error && error.message.includes('ENOENT')) {
+      throw new Error('Failed to read package metadata: package.json not found');
+    }
+    throw new Error(`Failed to read package metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export function clearPackageMetadataCache(): void {
+  cachedMetadata = null;
 }
 
 export function getCommandCount(): number {
