@@ -4,10 +4,10 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
+import packageJson from '../package.json';
 import { SpecWorkflowSetup } from './setup';
 import { detectProjectType, validateClaudeCode } from './utils';
 import { parseTasksFromMarkdown, generateTaskCommand } from './task-generator';
-import packageJson from '../package.json';
 
 const program = new Command();
 
