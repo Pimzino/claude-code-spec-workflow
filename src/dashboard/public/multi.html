@@ -715,35 +715,33 @@
                           </button>
                         </div>
 
-                        <!-- Collapsed view - just requirement titles -->
-                        <div
-                          v-if="spec.requirements.content && Array.isArray(spec.requirements.content) && spec.requirements.content.length > 0 && !isRequirementsExpanded(spec.name)"
-                          class="space-y-1"
-                        >
-                          <div
-                            v-for="(requirement, index) in spec.requirements.content"
-                            :key="(requirement && requirement.id) || index"
-                            class="text-xs text-gray-600 dark:text-gray-400 pl-2 border-l-2 border-gray-200 dark:border-gray-600"
-                          >
-                            <span v-if="requirement && requirement.id">
-                              <strong>{{ requirement.id }}:</strong> {{ requirement.title || '[No title - Debug: ' + JSON.stringify(Object.keys(requirement)) + ']' }}
-                            </span>
-                            <span v-else-if="typeof requirement === 'string'">
-                              {{ requirement }}
-                            </span>
-                            <span v-else> DEBUG: {{ JSON.stringify(requirement) }} </span>
-                          </div>
-                        </div>
 
                         <!-- Expanded view - full details -->
                         <div
                           v-if="spec.requirements.content && spec.requirements.content.length > 0 && isRequirementsExpanded(spec.name)"
                           class="space-y-3"
                         >
+                          <!-- Requirements header with clickable links -->
+                          <div class="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-3 mb-3">
+                            <h5 class="text-sm font-medium text-indigo-900 dark:text-indigo-200 mb-2">Jump to Requirement:</h5>
+                            <div class="flex flex-wrap gap-2">
+                              <a
+                                v-for="(requirement, index) in spec.requirements.content"
+                                :key="(requirement && requirement.id) || index"
+                                v-if="requirement && requirement.id"
+                                :href="`#${spec.name}-req-${requirement.id}`"
+                                @click.prevent="scrollToRequirement(spec.name, requirement.id)"
+                                class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800 transition-colors border border-indigo-200 dark:border-indigo-700"
+                              >
+                                {{ requirement.id }}: {{ requirement.title || 'No title' }}
+                              </a>
+                            </div>
+                          </div>
                           <div
                             v-for="(requirement, index) in spec.requirements.content"
                             :key="(requirement && requirement.id) || index"
-                            class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3"
+                            :id="`${spec.name}-req-${requirement.id}`"
+                            class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 scroll-mt-20"
                           >
                             <div v-if="requirement && requirement.id">
                               <h5 class="text-sm font-medium text-gray-900 dark:text-white mb-2">

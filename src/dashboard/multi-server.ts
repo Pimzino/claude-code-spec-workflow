@@ -281,19 +281,17 @@ export class MultiProjectDashboardServer {
     const activeTasks: ActiveTask[] = [];
 
     for (const [projectPath, state] of this.projects) {
-      // Only collect tasks from projects with active Claude sessions
-      if (!state.project.hasActiveSession) {
-        continue;
-      }
-
       const specs = await state.parser.getAllSpecs();
 
+      let hasActiveTaskInProject = false;
+      
       for (const spec of specs) {
         if (spec.tasks && spec.tasks.taskList.length > 0 && spec.tasks.inProgress) {
           // Only get the currently active task (marked as in progress)
           const activeTask = this.findTaskById(spec.tasks.taskList, spec.tasks.inProgress);
 
           if (activeTask) {
+            hasActiveTaskInProject = true;
             activeTasks.push({
               projectPath,
               projectName: state.project.name,
@@ -307,6 +305,31 @@ export class MultiProjectDashboardServer {
             });
           }
         }
+      }
+      
+      // Update the project's active session status based on whether it has active tasks
+      if (state.project.hasActiveSession !== hasActiveTaskInProject) {
+        state.project.hasActiveSession = hasActiveTaskInProject;
+        
+        // Send status update to clients
+        const statusUpdate = {
+          type: 'project-update',
+          projectPath,
+          data: {
+            type: 'status-update',
+            data: {
+              hasActiveSession: hasActiveTaskInProject,
+              lastActivity: new Date(),
+              isClaudeActive: hasActiveTaskInProject
+            }
+          }
+        };
+        
+        this.clients.forEach((client) => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify(statusUpdate));
+          }
+        });
       }
     }
 

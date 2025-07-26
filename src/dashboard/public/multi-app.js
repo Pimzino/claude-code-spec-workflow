@@ -327,5 +327,13 @@ PetiteVue.createApp({
   getCurrentTask(spec) {
     if (!spec.tasks || !spec.tasks.taskList || !spec.tasks.inProgress) return null;
     return spec.tasks.taskList.find(task => task.id === spec.tasks.inProgress);
+  },
+
+  // Scroll to a specific requirement
+  scrollToRequirement(specName, requirementId) {
+    const element = document.getElementById(`${specName}-req-${requirementId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 }).mount('#app');
