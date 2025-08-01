@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5] - 2025-08-01
+
+### Added
+- Scripts for loading context and environment information (npx @pimzino/claude-code-spec-workflow inspect-setup --spec {feature-name}) i.e.
+  - Checks if agents are available
+  - Loading of Requirements, Design and Task
+  - Loading of Steering docs if they exist
+** This should speed up context loading / task execution as we make claude more aware of what is available to it **
+
+### Fixed
+- Updated agent / command instructions to perform actions based on environment information.
+
 ## [1.4.4] - 2025-08-01
 
 ### Added
