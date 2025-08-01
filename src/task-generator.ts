@@ -143,59 +143,49 @@ ${task.description}
 
 ## Instructions
 
-**Agent-Based Execution (Recommended)**: If the \`spec-task-executor\` agent is available, use it for optimal task implementation:
+1. **Load Context & Environment**
+   Run: \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec ${specName} --task ${task.id}\`
+   
+   This provides:
+   - Complete environment information
+   - Specific task details and context
+   - Available agents and steering documents
+   - Spec documents (requirements, design)
+
+2. **Execute Based on Environment**
+
+**Agent-Based Execution (if available)**: Use spec-task-executor agent if shown in environment check:
 
 \`\`\`
 Use the spec-task-executor agent to implement task ${task.id}: "${task.description}" for the ${specName} specification.
 
-The agent should:
-1. Load all specification context from .claude/specs/${specName}/
-2. Load steering documents from .claude/steering/ (if available)
-3. Implement ONLY task ${task.id}: "${task.description}"
-4. Follow all project conventions and leverage existing code
-5. Mark the task as complete in tasks.md
-6. Provide a completion summary
+The agent should use the loaded context from inspect-setup and:
+1. Implement ONLY task ${task.id}: "${task.description}"
+2. Follow all project conventions and leverage existing code
+3. Mark the task as complete in tasks.md
+4. Provide a completion summary
 
-Context files to load:
-- .claude/specs/${specName}/requirements.md
-- .claude/specs/${specName}/design.md  
-- .claude/specs/${specName}/tasks.md
-- .claude/steering/product.md (if exists)
-- .claude/steering/tech.md (if exists)
-- .claude/steering/structure.md (if exists)
-
-Task details:
+Task details from context:
 - ID: ${task.id}
 - Description: ${task.description}${task.leverage ? `
 - Leverage: ${task.leverage}` : ''}${task.requirements ? `
 - Requirements: ${task.requirements}` : ''}
 \`\`\`
 
-**Fallback Execution**: If the agent is not available, you can execute:
-\`\`\`
-/spec-execute ${task.id} ${specName}
-\`\`\`
+**Manual Execution (fallback)**: If agent not available according to environment check:
 
-**Context Loading**:
-Before executing the task, you MUST load all relevant context:
-1. **Specification Documents**:
-   - Load \`.claude/specs/${specName}/requirements.md\` for feature requirements
-   - Load \`.claude/specs/${specName}/design.md\` for technical design
-   - Load \`.claude/specs/${specName}/tasks.md\` for the complete task list
-2. **Steering Documents** (if available):
-   - Load \`.claude/steering/product.md\` for product vision context
-   - Load \`.claude/steering/tech.md\` for technical standards
-   - Load \`.claude/steering/structure.md\` for project conventions
+1. **Use Loaded Context**
+   - All context is already loaded from inspect-setup command
+   - Task details, requirements, design, and steering docs are available
+   - Focus on implementing the specific task
 
-**Process**:
-1. Load all context documents listed above
-2. Execute task ${task.id}: "${task.description}"
-3. **Prioritize code reuse**: Use existing components and utilities${task.leverage ? ` identified above` : ''}
-4. Follow all implementation guidelines from the main /spec-execute command
-5. **Follow steering documents**: Adhere to patterns in tech.md and conventions in structure.md
-6. **CRITICAL**: Mark the task as complete in tasks.md by changing [ ] to [x]
-7. Confirm task completion to user
-8. Stop and wait for user review
+2. **Implementation Process**
+   1. Execute task ${task.id}: "${task.description}"
+   2. **Prioritize code reuse**: Use existing components and utilities${task.leverage ? ` identified above` : ''}
+   3. Follow implementation guidelines and project conventions
+   4. **CRITICAL**: Mark the task as complete in tasks.md by changing [ ] to [x]
+   5. Confirm task completion to user
+   6. Stop and wait for user review
 
 **Important Rules**:
 - Execute ONLY this specific task
@@ -213,60 +203,36 @@ When completing this task:
 3. **Stop execution**: Do not proceed to next task automatically
 4. **Wait for instruction**: Let user decide next steps
 
-## Post-Implementation Review (if agent available)
-After marking the task complete, use the \`spec-task-implementation-reviewer\` agent:
+## Post-Implementation Actions
+
+**Review (if agent available from environment check)**:
+If spec-task-implementation-reviewer agent is available, use it to review the implementation:
 
 \`\`\`
 Use the spec-task-implementation-reviewer agent to review the implementation of task ${task.id} for the ${specName} specification.
 
-The agent should:
-1. Load all specification documents from .claude/specs/${specName}/
-2. Load steering documents from .claude/steering/ (if available)
-3. Review the implementation for correctness and compliance
-4. Provide structured feedback on the implementation quality
-5. Identify any issues that need to be addressed
-
-Context files to review:
-- .claude/specs/${specName}/requirements.md
-- .claude/specs/${specName}/design.md
-- .claude/specs/${specName}/tasks.md
-- Implementation changes for task ${task.id}
+The agent should use the previously loaded context and:
+1. Review the implementation for correctness and compliance
+2. Provide structured feedback on the implementation quality
+3. Identify any issues that need to be addressed
 \`\`\`
 
-## Code Duplication Analysis (if agent available)
-Before finalizing implementation, use the \`spec-duplication-detector\` agent:
+**Code Quality Check (if agent available from environment check)**:
+If spec-duplication-detector agent is available, use it to analyze code quality:
 
 \`\`\`
 Use the spec-duplication-detector agent to analyze code duplication for task ${task.id} of the ${specName} specification.
 
-The agent should:
-1. Scan the newly implemented code
-2. Identify any duplicated patterns
-3. Suggest refactoring opportunities
-4. Recommend existing utilities to reuse
-5. Help maintain DRY principles
-
-This ensures code quality and maintainability.
+The agent should analyze the implementation and suggest improvements for maintainability.
 \`\`\`
 
-## Integration Testing (if agent available)
-After implementation review passes, use the \`spec-integration-tester\` agent:
+**Integration Testing (if agent available from environment check)**:
+If spec-integration-tester agent is available, use it to test the implementation:
 
 \`\`\`
 Use the spec-integration-tester agent to test the implementation of task ${task.id} for the ${specName} specification.
 
-The agent should:
-1. Load all specification documents and understand the changes made
-2. Run relevant test suites for the implemented functionality
-3. Validate integration points and API contracts
-4. Check for regressions using git history analysis
-5. Provide comprehensive test feedback
-
-Test context:
-- Changes made in task ${task.id}
-- Related test suites to execute
-- Integration points to validate
-- Git history for regression analysis
+The agent should validate functionality and regression testing.
 \`\`\`
 
 ## Next Steps

@@ -1,6 +1,6 @@
 {
   "name": "@pimzino/claude-code-spec-workflow",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Automated workflows for Claude Code. Includes spec-driven development (Requirements → Design → Tasks → Implementation) with intelligent orchestration, optional steering documents and streamlined bug fix workflow (Report → Analyze → Fix → Verify). We have a bonus and option real time dashboard to monitor your specs and tasks.",
   "main": "dist/index.js",
   "bin": {

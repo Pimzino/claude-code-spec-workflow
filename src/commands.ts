@@ -51,21 +51,23 @@ You are helping create a new feature specification through the complete workflow
 
 ### Initial Setup
 
-1. **Create Directory Structure**
+1. **Load Environment & Context**
+   Run: \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec {feature-name} --full-tasks\`
+   
+   This command provides:
+   - Available agents and steering documents
+   - Project structure and existing specs
+   - Complete context for the workflow
+
+2. **Create Directory Structure**
    - Create \`.claude/specs/{feature-name}/\` directory
    - Initialize empty requirements.md, design.md, and tasks.md files
-
-2. **Load Context Documents**
-   - Look for .claude/steering/product.md (product vision and goals)
-   - Look for .claude/steering/tech.md (technical standards and patterns)
-   - Look for .claude/steering/structure.md (project structure conventions)
-   - Load available steering documents to guide the entire workflow
 
 3. **Analyze Existing Codebase** (BEFORE starting any phase)
    - **Search for similar features**: Look for existing patterns relevant to the new feature
    - **Identify reusable components**: Find utilities, services, hooks, or modules that can be leveraged
    - **Review architecture patterns**: Understand current project structure, naming conventions, and design patterns
-   - **Cross-reference with steering documents**: Ensure findings align with documented standards
+   - **Cross-reference with steering documents**: Use loaded steering docs to ensure alignment
    - **Find integration points**: Locate where new feature will connect with existing systems
    - **Document findings**: Note what can be reused vs. what needs to be built from scratch
 
@@ -88,22 +90,29 @@ You are helping create a new feature specification through the complete workflow
 - **Include all sections**: Don't omit any required template sections
 
 ### Requirements Validation and Approval
-- **Automatic Validation (if agent available)**: FIRST use the \`spec-requirements-validator\` agent to validate the requirements:
+- **Environment-Aware Validation**: Use agents if available from the environment check:
 
 \`\`\`
+If spec-requirements-validator agent is available (from environment check):
 Use the spec-requirements-validator agent to validate the requirements document for the {feature-name} specification.
 
 The agent should:
-1. Read the requirements document from .claude/specs/{feature-name}/requirements.md
-2. Validate against all quality criteria (structure, user stories, acceptance criteria, etc.)
-3. Check alignment with steering documents (product.md, tech.md, structure.md)
-4. Provide specific feedback and improvement suggestions
-5. Rate the overall quality as PASS, NEEDS_IMPROVEMENT, or MAJOR_ISSUES
+1. Load context with template: Run \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec {feature-name} --with-templates --json\`
+2. Parse the JSON output to extract the required content:
+   - Requirements document: \`current_spec.requirements.content\`
+   - Requirements template: \`templates.requirements.content\`
+   - Steering documents: \`environment.steering.product.content\`, \`environment.steering.tech.content\`, \`environment.steering.structure.content\`
+3. Compare requirements structure against the requirements template content
+4. Validate against all quality criteria (structure, user stories, acceptance criteria, etc.)
+5. Check alignment with available steering documents (already loaded in context)
+6. Provide specific feedback and improvement suggestions
+7. Rate the overall quality as PASS, NEEDS_IMPROVEMENT, or MAJOR_ISSUES
 
 If validation fails, use the feedback to improve the requirements before presenting to the user.
+
+If agent not available (from environment check): Review manually against template criteria.
 \`\`\`
 
-- **If validation agent not available**: Review the requirements manually against template criteria first
 - **Only present to user after validation passes or improvements are made**
 - **Present the validated requirements document with codebase analysis summary**
 - Ask: "Do the requirements look good? If so, we can move on to the design phase."
@@ -118,7 +127,7 @@ If validation fails, use the feedback to improve the requirements before present
 ### Design Process
 1. **Load Previous Phase**
    - Ensure requirements.md exists and is approved
-   - Load requirements document for context
+   - Use loaded requirements document from inspect-setup context
 
 2. **Codebase Research** (MANDATORY)
    - **Map existing patterns**: Identify data models, API patterns, component structures
@@ -142,23 +151,29 @@ If validation fails, use the feedback to improve the requirements before present
 - **Include Mermaid diagrams**: Add visual representations as shown in template
 
 ### Design Validation and Approval
-- **Automatic Validation (if agent available)**: FIRST use the \`spec-design-validator\` agent to validate the design:
+- **Environment-Aware Validation**: Use agents if available from the environment check:
 
 \`\`\`
+If spec-design-validator agent is available (from environment check):
 Use the spec-design-validator agent to validate the design document for the {feature-name} specification.
 
 The agent should:
-1. Read the design document from .claude/specs/{feature-name}/design.md
-2. Read the requirements document for context
-3. Validate technical soundness, architecture quality, and completeness
-4. Check alignment with tech.md standards and structure.md conventions
-5. Verify proper leverage of existing code and integration points
-6. Rate the overall quality as PASS, NEEDS_IMPROVEMENT, or MAJOR_ISSUES
+1. Load context with template: Run \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec {feature-name} --with-templates --json\`
+2. Parse the JSON output to extract the required content:
+   - Design document: \`current_spec.design.content\`
+   - Requirements document: \`current_spec.requirements.content\`
+   - Design template: \`templates.design.content\`
+   - Steering documents: \`environment.steering.product.content\`, \`environment.steering.tech.content\`, \`environment.steering.structure.content\`
+3. Compare design structure against the design template content
+4. Validate technical soundness, architecture quality, and completeness
+5. Check alignment with available steering documents (already loaded in context)
+6. Verify proper leverage of existing code and integration points
+7. Rate the overall quality as PASS, NEEDS_IMPROVEMENT, or MAJOR_ISSUES
 
 If validation fails, use the feedback to improve the design before presenting to the user.
-\`\`\`
 
-- **If validation agent not available**: Review the design manually against architectural best practices first
+If agent not available (from environment check): Review manually against architectural best practices.
+\`\`\`
 - **Only present to user after validation passes or improvements are made**
 - **Present the validated design document** with code reuse highlights and steering document alignment
 - Ask: "Does the design look good? If so, we can move on to the implementation planning."
@@ -171,7 +186,7 @@ If validation fails, use the feedback to improve the design before presenting to
 ### Task Planning Process
 1. **Load Previous Phases**
    - Ensure design.md exists and is approved
-   - Load both requirements.md and design.md for complete context
+   - Use loaded requirements.md and design.md from inspect-setup context
 
 2. **Generate Atomic Task List**
    - Break design into atomic, executable coding tasks following these criteria:
@@ -209,12 +224,18 @@ If validation fails, use the feedback to improve the design before presenting to
 Use the spec-task-validator agent to validate the task breakdown for the {feature-name} specification.
 
 The agent should:
-1. Read the tasks document from .claude/specs/{feature-name}/tasks.md
-2. Read requirements.md and design.md for context
-3. Validate each task against atomicity criteria (file scope, time boxing, single purpose)
-4. Check for agent-friendly formatting and clear specifications
-5. Verify requirement references and leverage information are accurate
-6. Rate the overall quality as PASS, NEEDS_IMPROVEMENT, or MAJOR_ISSUES
+1. Load context with template: Run \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec {feature-name} --with-templates --json\`
+2. Parse the JSON output to extract the required content:
+   - Tasks document: \`current_spec.tasks.content.raw_content\`
+   - Requirements document: \`current_spec.requirements.content\`
+   - Design document: \`current_spec.design.content\`
+   - Tasks template: \`templates.tasks.content\`
+   - Steering documents: \`environment.steering.product.content\`, \`environment.steering.tech.content\`, \`environment.steering.structure.content\`
+3. Compare tasks structure against the tasks template content
+4. Validate each task against atomicity criteria (file scope, time boxing, single purpose)
+5. Check for agent-friendly formatting and clear specifications
+6. Verify requirement references and leverage information are accurate
+7. Rate the overall quality as PASS, NEEDS_IMPROVEMENT, or MAJOR_ISSUES
 
 If validation fails, use the feedback to break down tasks further and improve atomicity before presenting to the user.
 \`\`\`
@@ -234,12 +255,13 @@ If validation fails, use the feedback to break down tasks further and improve at
 Use the spec-dependency-analyzer agent to analyze task dependencies for the {feature-name} specification.
 
 The agent should:
-1. Read the tasks document from .claude/specs/{feature-name}/tasks.md
-2. Analyze explicit and implicit dependencies between tasks
-3. Identify parallelization opportunities
-4. Calculate the critical path
-5. Suggest optimal execution order
-6. Warn about any circular dependencies or issues
+1. Load context: Run \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec {feature-name}\`
+2. Use the loaded tasks document from the context
+3. Analyze explicit and implicit dependencies between tasks
+4. Identify parallelization opportunities
+5. Calculate the critical path
+6. Suggest optimal execution order
+7. Warn about any circular dependencies or issues
 
 The analysis will help optimize task execution strategy.
 \`\`\`
@@ -329,54 +351,46 @@ This is Phase 4 of the spec workflow. Your goal is to implement individual tasks
 
 ## Instructions
 
-**Agent-Based Execution (Recommended)**: If the \`spec-task-executor\` agent is available, use it for optimal task implementation:
+1. **Load Context & Environment**
+   Run: \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec {feature-name} --task {task-id}\`
+   
+   This provides:
+   - Complete environment information
+   - Specific task details and context
+   - Available agents and steering documents
+   - Spec documents (requirements, design)
+
+2. **Execute Based on Environment**
+
+**Agent-Based Execution (if available)**: Use spec-task-executor agent if shown in environment check:
 
 \`\`\`
 Use the spec-task-executor agent to implement the specified task for the {feature-name} specification.
 
-The agent should:
-1. Load all specification context from .claude/specs/{feature-name}/
-2. Load steering documents from .claude/steering/ (if available)  
-3. Implement ONLY the specified task
-4. Follow all project conventions and leverage existing code
-5. Mark the task as complete in tasks.md
-6. Provide a completion summary
-
-Context files to load:
-- .claude/specs/{feature-name}/requirements.md
-- .claude/specs/{feature-name}/design.md
-- .claude/specs/{feature-name}/tasks.md  
-- .claude/steering/product.md (if exists)
-- .claude/steering/tech.md (if exists)
-- .claude/steering/structure.md (if exists)
+The agent should use the loaded context from inspect-setup and:
+1. Implement ONLY the specified task
+2. Follow all project conventions and leverage existing code  
+3. Mark the task as complete in tasks.md
+4. Provide a completion summary
 
 Task to implement: {task-id}
 \`\`\`
 
-**Manual Execution (Fallback)**: If the agent is not available, follow this process:
+**Manual Execution (fallback)**: If agent not available according to environment check:
 
-1. **Prerequisites**
-   - Ensure tasks.md exists and is approved
-   - Load the spec documents from \`.claude/specs/{feature-name}/\`:
-     - Load \`.claude/specs/{feature-name}/requirements.md\` for feature requirements
-     - Load \`.claude/specs/{feature-name}/design.md\` for technical design
-     - Load \`.claude/specs/{feature-name}/tasks.md\` for the complete task list
-   - **Load all steering documents** (if available): 
-     - Load .claude/steering/product.md for product context
-     - Load .claude/steering/tech.md for technical patterns
-     - Load .claude/steering/structure.md for project conventions
-   - Identify the specific task to execute
+1. **Use Loaded Context**
+   - All context is already loaded from inspect-setup command
+   - Task details, requirements, design, and steering docs are available
+   - Focus on implementing the specific task identified
 
-2. **Process**
-   1. Load spec documents from \`.claude/specs/{feature-name}/\` directory:
-      - Load requirements.md, design.md, and tasks.md for complete context
-   2. Execute ONLY the specified task (never multiple tasks)
-   3. Implement following existing code patterns and conventions
-   4. Validate implementation against referenced requirements
-   5. Run tests and checks if applicable
-   6. **CRITICAL**: Mark task as complete by changing [ ] to [x] in tasks.md
-   7. Confirm task completion status to user
-   8. **CRITICAL**: Stop and wait for user review before proceeding
+2. **Implementation Process**
+   1. Execute ONLY the specified task (never multiple tasks)
+   2. Implement following existing code patterns and conventions
+   3. Validate implementation against referenced requirements
+   4. Run tests and checks if applicable
+   5. **CRITICAL**: Mark task as complete by changing [ ] to [x] in tasks.md
+   6. Confirm task completion status to user
+   7. **CRITICAL**: Stop and wait for user review before proceeding
 
 3. **Task Execution**
    - Focus on ONE task at a time
@@ -412,11 +426,12 @@ During or after task implementation, use the \`spec-test-generator\` agent:
 Use the spec-test-generator agent to generate tests for task {task-id} of the {feature-name} specification.
 
 The agent should:
-1. Load requirements.md for acceptance criteria
-2. Load design.md for technical details
-3. Analyze existing test patterns in the codebase
-4. Generate comprehensive test cases
-5. Provide test implementations following project conventions
+1. Load context: Run \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec {feature-name}\`
+2. Use loaded requirements.md for acceptance criteria
+3. Use loaded design.md for technical details
+4. Analyze existing test patterns in the codebase
+5. Generate comprehensive test cases
+6. Provide test implementations following project conventions
 
 The generated tests ensure comprehensive coverage of the implemented functionality.
 \`\`\`
@@ -478,8 +493,9 @@ Test context:
 
 ## Task Selection
 If no task-id specified:
-- Look at tasks.md for the spec
-- Recommend the next pending task
+- Run: \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec {feature-name} --next-task\`
+- Use the recommended next task from the intelligent task analyzer
+- This considers task dependencies and proper execution order
 - Ask user to confirm before proceeding
 
 If no feature-name specified:
@@ -998,13 +1014,14 @@ This is Phase 2 of the bug fix workflow. Your goal is to understand why the bug 
 Use the bug-root-cause-analyzer agent to perform enhanced root cause analysis for the {bug-name} bug.
 
 The agent should:
-1. Load the bug report from .claude/bugs/{bug-name}/report.md
-2. Perform git archaeology to find when the bug was introduced
-3. Analyze git history for similar issues and patterns
-4. Investigate code context and evolution
-5. Assess impact and relationships
-6. Develop prevention strategies
-7. Provide comprehensive analysis with fix recommendations
+1. Load context: Run \`npx @pimzino/claude-code-spec-workflow inspect-setup --bug {bug-name}\`
+2. Use loaded bug report and steering documents from the context
+3. Perform git archaeology to find when the bug was introduced
+4. Analyze git history for similar issues and patterns
+5. Investigate code context and evolution
+6. Assess impact and relationships
+7. Develop prevention strategies
+8. Provide comprehensive analysis with fix recommendations
 
 Context for analysis:
 - Bug report with symptoms and reproduction steps
@@ -1017,10 +1034,10 @@ Context for analysis:
 
 1. **Prerequisites**
    - Ensure report.md exists and is complete
-   - Load the bug report for context
-   - **Load steering documents**: 
-     - Check for .claude/steering/tech.md for technical patterns
-     - Check for .claude/steering/structure.md for project organization
+   - Use loaded bug report from inspect-setup context
+   - **Use loaded steering documents from context**: 
+     - Use loaded tech.md for technical patterns
+     - Use loaded structure.md for project organization
    - Understand the reported issue completely
 
 2. **Investigation Process**
@@ -1120,10 +1137,10 @@ You are working on the fix implementation phase of the bug fix workflow.
 
 1. **Prerequisites**
    - Ensure analysis.md exists and is approved
-   - Load report.md and analysis.md for complete context
-   - **Load steering documents**: 
-     - Load .claude/steering/tech.md for technical patterns
-     - Load .claude/steering/structure.md for project conventions
+   - Use loaded report.md and analysis.md from inspect-setup context
+   - **Use loaded steering documents from context**: 
+     - Use loaded tech.md for technical patterns
+     - Use loaded structure.md for project conventions
    - Understand the planned fix approach completely
 
 2. **Implementation Process**
@@ -1236,7 +1253,7 @@ You are working on the verification phase of the bug fix workflow.
 
 1. **Prerequisites**
    - Ensure the fix has been implemented
-   - Load report.md, analysis.md for context
+   - Use loaded report.md, analysis.md from inspect-setup context
    - Understand what was changed and why
    - Have the verification plan from analysis.md
 
@@ -1395,49 +1412,61 @@ You are a **stateless orchestration coordinator**. You delegate all work to spec
 ## Instructions
 
 ### 1. Load Context & Analyze State
-**Silently load** (no verbose output):
-- .claude/specs/{spec-name}/tasks.md → Parse [x] completed vs [ ] pending tasks
-- .claude/specs/{spec-name}/requirements.md, design.md → Context for agents
-- .claude/steering/ documents → Project conventions
+**Run Environment Check**: \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec {spec-name} --next-task\`
+
+This provides:
+- Intelligent next task recommendation based on dependencies
+- Task completion status and execution readiness
+- Available agents and steering documents  
+- Complete spec context for execution
 
 ### 2. Show Current Status
-Display brief status and plan:
+Display brief status and plan based on environment check results:
 \\\`\\\`\\\`
 📋 {spec-name} Status: {completed}/{total} tasks complete
-⏳ Pending: Task {next-id}, Task {next-id+1}...
-▶️ Next: Task {next-id} - {description}
-Continue orchestration? [y/N]
+
+If execution_ready is true:
+🎯 Ready to Execute: Task {recommended-task-id} - {description}
+▶️ Continue orchestration? [y/N]
+
+If execution_ready is false:
+⚠️ No tasks ready for execution
+Reason: {blocked_reason}
 \\\`\\\`\\\`
 
 ### 3. Execute Tasks Continuously
-Execute each pending task and **automatically continue** to the next:
+Execute tasks using intelligent next task detection:
 
-**For each uncompleted task ([ ] checkbox):**
+**Continuous Execution Loop:**
 
-**Step 1 - Announce:**
-\\\`🔄 Task {id}: {description}\\\`
+**Step 1 - Get Next Task:**
+Run: \`npx @pimzino/claude-code-spec-workflow inspect-setup --spec {spec-name} --next-task --json\`
+Parse the recommended_next_task from the JSON response.
 
-**Step 2 - Delegate to Agent:**
+**Step 2 - Announce:**
+\\\`🔄 Task {recommended-task-id}: {description}\\\`
+
+**Step 3 - Delegate to Agent:**
 Use spec-task-executor agent (primary method):
 \\\`\\\`\\\`
-Use the spec-task-executor agent to implement task {task-id} for {spec-name}.
+Use the spec-task-executor agent to implement task {recommended-task-id} for {spec-name}.
 
-Context: Load .claude/specs/{spec-name}/ and .claude/steering/
-Task: {task-id} - {description}
+Context: Use context from the inspect-setup command
+Task: {recommended-task-id} - {description}
 Requirements: {requirements-ref}
 Leverage: {leverage-info}
 
 Mark complete in tasks.md when done.
 \\\`\\\`\\\`
 
-**Step 3 - Fallback (if agent unavailable):**
-\\\`/{spec-name}-task-{task-id}\\\`
+**Step 4 - Fallback (if agent unavailable):**
+\\\`/{spec-name}-task-{recommended-task-id}\\\`
 
-**Step 4 - Report completion:**
-\\\`✅ Task {id} complete\\\`
+**Step 5 - Report completion:**
+\\\`✅ Task {recommended-task-id} complete\\\`
 
-**Step 5 - Continue automatically:**
-**CRITICAL**: Immediately proceed to next pending task without waiting for user input. Only pause for errors or when all tasks complete.
+**Step 6 - Continue automatically:**
+**CRITICAL**: Re-run inspect-setup --next-task to get the next ready task. Immediately proceed without waiting for user input. Only pause for errors or when execution_ready becomes false.
 
 ### 4. Error Handling
 If task fails:
